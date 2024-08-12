@@ -346,6 +346,7 @@ pub trait PaymentGenerator: Display + Send {
 pub struct PaymentResult {
     pub htlc_count: usize,
     pub payment_outcome: PaymentOutcome,
+    pub fees_msat: Option<i64>,
 }
 
 impl PaymentResult {
@@ -353,6 +354,7 @@ impl PaymentResult {
         PaymentResult {
             htlc_count: 0,
             payment_outcome: PaymentOutcome::NotDispatched,
+            fees_msat: None,
         }
     }
 
@@ -360,6 +362,7 @@ impl PaymentResult {
         PaymentResult {
             htlc_count: 0,
             payment_outcome: PaymentOutcome::TrackPaymentFailed,
+            fees_msat: None,
         }
     }
 }
@@ -368,8 +371,10 @@ impl Display for PaymentResult {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Payment outcome: {:?} with {} htlcs",
-            self.payment_outcome, self.htlc_count
+            "Payment outcome: {:?} with {} htlcs and {} msat in fees.",
+            self.payment_outcome,
+            self.htlc_count,
+            self.fees_msat.unwrap_or_default()
         )
     }
 }

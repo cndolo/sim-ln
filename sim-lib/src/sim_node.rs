@@ -536,6 +536,7 @@ impl<T: SimNetwork> LightningNode for SimNode<'_, T> {
                 if let Err(e) = sender.send(Ok(PaymentResult {
                     htlc_count: 0,
                     payment_outcome: PaymentOutcome::RouteNotFound,
+                    fees_msat: None,
                 })) {
                     log::error!("Could not send payment result: {:?}.", e);
                 }
@@ -763,6 +764,7 @@ impl SimNetwork for SimGraph {
                 if let Err(e) = sender.send(Ok(PaymentResult {
                     htlc_count: 0,
                     payment_outcome: PaymentOutcome::RouteNotFound,
+                    fees_msat: None,
                 })) {
                     log::error!("Could not send payment result: {:?}.", e);
                 }
@@ -975,6 +977,7 @@ async fn propagate_payment(
         PaymentResult {
             htlc_count: 0,
             payment_outcome: PaymentOutcome::Unknown,
+            fees_msat: None,
         }
     } else {
         // If we successfully added the htlc, go ahead and remove all the htlcs in the route with successful resolution.
@@ -998,6 +1001,7 @@ async fn propagate_payment(
         PaymentResult {
             htlc_count: 1,
             payment_outcome: PaymentOutcome::Success,
+            fees_msat: None, //TODO
         }
     };
 
@@ -1470,11 +1474,13 @@ mod tests {
                         PaymentResult {
                             htlc_count: 2,
                             payment_outcome: PaymentOutcome::Success,
+                            fees_msat: None,
                         }
                     } else if receiver == dest_2 {
                         PaymentResult {
                             htlc_count: 0,
                             payment_outcome: PaymentOutcome::InsufficientBalance,
+                            fees_msat: None,
                         }
                     } else {
                         panic!("unknown mocked receiver");
@@ -1495,6 +1501,7 @@ mod tests {
             .await
             .unwrap();
         assert!(matches!(result_1.payment_outcome, PaymentOutcome::Success));
+        assert!(matches!(result_1.fees_msat, None));
 
         let result_2 = node
             .track_payment(&hash_2, shutdown_listener.clone())
@@ -1504,6 +1511,7 @@ mod tests {
             result_2.payment_outcome,
             PaymentOutcome::InsufficientBalance
         ));
+        assert!(matches!(result_2.fees_msat, None));
     }
 
     /// Contains elements required to test dispatch_payment functionality.

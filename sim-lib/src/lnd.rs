@@ -218,7 +218,8 @@ impl LightningNode for LndNode {
                         };
                         return Ok(PaymentResult {
                             htlc_count: payment.htlcs.len(),
-                            payment_outcome
+                            payment_outcome,
+                            fees_msat: Some(payment.fee_msat),
                         });
                     },
                     None => {

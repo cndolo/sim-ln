@@ -219,9 +219,15 @@ impl LightningNode for ClnNode {
                             ListpaysPaysStatus::Failed => PaymentOutcome::UnexpectedError,
                         };
                         let htlc_count = pay.number_of_parts.unwrap_or(1).try_into().map_err(|_| LightningError::TrackPaymentError("Invalid number of parts".to_string()))?;
+                        let fees_msat = if let (Some(amount_sent_msat), Some(amount_msat)) = (&pay.amount_sent_msat, &pay.amount_msat) {
+                            i64::try_from(amount_sent_msat.msat - amount_msat.msat).ok()
+                        } else {
+                            None
+                        };
                         return Ok(PaymentResult {
                             htlc_count,
                             payment_outcome,
+                            fees_msat,
                         });
                     }
                 },
